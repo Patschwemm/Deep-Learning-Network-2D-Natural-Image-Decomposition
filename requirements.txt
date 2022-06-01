@@ -1,5 +1,6 @@
 matplotlib
 numpy
-pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
 tqdm
 segmentation-models-pytorch
+$ pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+$ pytorch torchvision torchaudio cpuonly -c pytorch
