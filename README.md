@@ -2,10 +2,10 @@
 Primitive Decomposition: Deep Learning Network 2D Natural Image Decomposition
 Easy conda install from requirements.txt
 ```sh
-conda create -n vda
-conda activate vda
+conda create -n cv
+conda activate cv
 conda config --env --add channels conda-forge
-conda install python=3 -y
+conda install python -y
 conda install $(cat requirements.txt) -y
 ```
 
