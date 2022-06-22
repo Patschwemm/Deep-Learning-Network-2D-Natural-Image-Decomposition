@@ -27,4 +27,17 @@ class Main_Network(nn.Module):
         biasTerms = 0
 
         # still to be defined
-        self.primitivesTable = modules.Primitives(params, outChannels)
+        # self.primitivesTable = modules.Primitives(params, outChannels)
+
+        self.outputLayer = nn.Conv2d(in_channels=outChannels, out_channels=4)
+
+    def foward(self, x):
+
+        encoding = self.encoder(x)
+        features = self.fcLayers(encoding)
+        primitive = self.outputLayer(features)
+        return primitive
+
+
+
+
