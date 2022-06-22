@@ -24,3 +24,9 @@ tar -xvzf images.tar.gz
 rm annotations.tar.gz
 rm images.tar.gz
 ```
+
+Basic structure:
+Backbone of the network: backbone_training.ipynb
+Decomposition Network: main_network.py
+encoder part for feature extraction: encoder.py
+Modules for shape, position prediction: modules.py

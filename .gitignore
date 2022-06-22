@@ -1,4 +1,5 @@
 .vscode
 dataset/
 __pycache__/
+models/
 cad.h5
