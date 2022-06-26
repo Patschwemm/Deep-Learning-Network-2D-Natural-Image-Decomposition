@@ -12,8 +12,6 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
     _+ meanng max(0, x)
     """
     
-    # because we are not centered in the origin, take the min distance of the two possible rectangle sides
-
     axis_x = torch.linspace(start=0, end=y.shape[0]-1, steps = y.shape[0])
     axis_y = torch.linspace(start=0, end=y.shape[1]-1, steps = y.shape[1])
 
@@ -26,14 +24,16 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
     yborderup = x[1] - x[2]/2
     yborderdown = x[1] + x[2]/2
 
-    # compute field distances for dimensions x and y
+    # compute distances for dimensions x and y
     c_x = torch.maximum( xborderleft - grid_x, grid_x - xborderright )
     c_y = torch.maximum( yborderup - grid_y, grid_y - yborderdown )
 
     # if a point is inside the rectangle, default to 0 distance
+    # this is the case if the maximum of both distances equl to zero
     c_x = torch.maximum(torch.zeros(c_x.shape), c_x)
     c_y = torch.maximum(torch.zeros(c_x.shape), c_y)
 
+    # merge distance of dimensions to obtain field distances
     c_field_distance = torch.sqrt(c_x**2 + c_y**2)
 
     mask = c_field_distance == 0
@@ -60,7 +60,7 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
     print(zeros.nonzero(), min)
     print(x[0], x[1])
 
-
+    return c_field_distance
     
 
     
@@ -124,18 +124,14 @@ def union_area(x: torch.Tensor, y: torch.Tensor, output_tensor = False):
     sum = torch.sum(union)
     return sum if output_tensor == False else sum, union
 
-
-
-    return prim_binary_mask
-
 def pred_to_primitive(center_x: int, center_y: int, length: int, width: int):
 
     return primitives.Rectangle(center = [center_x, center_y], length=length, width=width)
 
 
-x = torch.tensor([128., 128., 100., 50.], requires_grad=True)
-y = torch.ones((256, 256))
-distance_field_rectangle(x,y)
+# x = torch.tensor([128., 128., 100., 50.], requires_grad=True)
+# y = torch.ones((256, 256))
+# distance_field_rectangle(x,y)
 # rect = tensor_to_rectangle(x, y)
 # print(intersection_area(rect, y, output_tensor=False))
 # print(union_area(rect, y, output_tensor=False))
