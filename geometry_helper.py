@@ -1,5 +1,4 @@
 import torch
-import primitives
 import matplotlib.pyplot as plt    
 from typing import Tuple
 
@@ -17,7 +16,6 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
 
     grid_x, grid_y = torch.meshgrid(axis_x, axis_y, indexing="ij")
 
-
     # calculate the border of the rectangle
     xborderleft = x[0] - x[3]/2
     xborderright = x[0] + x[3]/2
@@ -31,14 +29,14 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
     # if a point is inside the rectangle, default to 0 distance
     # this is the case if the maximum of both distances equl to zero
     c_x = torch.maximum(torch.zeros(c_x.shape), c_x)
-    c_y = torch.maximum(torch.zeros(c_x.shape), c_y)
+    c_y = torch.maximum(torch.zeros(c_y.shape), c_y)
 
     # merge distance of dimensions to obtain field distances
     c_field_distance = torch.sqrt(c_x**2 + c_y**2)
+    print("penner")
 
     mask = c_field_distance == 0
 
-    print(mask)
 
 
     # take the element wise minimum
@@ -63,7 +61,49 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
     return c_field_distance
     
 
-    
+def distance_field_batch(x: torch.Tensor, y_shape: torch.Tensor):
+
+    w, h = y_shape[1], y_shape[0]
+
+    bbox_test = torch.tensor([
+    # [(P1_x, P1_y), (P2_x, P2_y), ...]
+    [(128 - 12, 128 - 12), (128 + 12, 128 + 12)],
+    [(128 - 12, 128 - 12), (128 + 12, 128 + 12)]
+    ]).float()
+
+
+    bbox_list = []
+    for rect in x:
+        bbox_list.append([
+            (rect[0, 0]-rect[1, 1], rect[0, 1]-rect[1, 0]),
+         (rect[0, 0]+rect[1, 1], rect[0, 1]+rect[1, 0])
+         ])
+        
+    bbox = torch.tensor(bbox_list).float()
+
+
+
+    # coordinate system
+    X = torch.arange(w)
+    Y = torch.arange(h)
+    # reshape to match bounding boxes
+    X, Y = X[None, :, None], Y[None, :, None]
+    # compute L1-distances in each dimension to both boundaries
+    Dx, Dy = bbox[:, None, :, 0] - X, bbox[:, None, :, 1] - Y
+    Dx[..., 1], Dy[..., 1] = Dx[..., 1] * -1, Dy[..., 1] * -1
+    # compute 
+    Dx, Dy = Dx.max(dim=-1).values, Dy.max(dim=-1).values
+    Dx = torch.maximum(torch.zeros_like(Dx), Dx)
+    Dy = torch.maximum(torch.zeros_like(Dy), Dy)
+    D = Dx.unsqueeze(-1)**2 + Dy.unsqueeze(-2)**2
+
+    # plt.imshow(D[0] == 0, cmap='gray')
+    # plt.savefig("pictures/dist_field_batched.png")
+    # plt.show()
+    # plt.close()
+
+    print(D.shape)
+    return D
 
 
 def tensor_to_rectangle(x: torch.Tensor, y: torch.Tensor):
@@ -129,9 +169,14 @@ def pred_to_primitive(center_x: int, center_y: int, length: int, width: int):
     return primitives.Rectangle(center = [center_x, center_y], length=length, width=width)
 
 
-# x = torch.tensor([128., 128., 100., 50.], requires_grad=True)
+# x = torch.tensor([
+#     [128., 128., 100., 50.],
+#     [100, 100, 50 ,20],
+#     [80, 80, 30, 60]
+#     ])
 # y = torch.ones((256, 256))
-# distance_field_rectangle(x,y)
+# dist = distance_field_batch(x, y.shape)
+
 # rect = tensor_to_rectangle(x, y)
 # print(intersection_area(rect, y, output_tensor=False))
 # print(union_area(rect, y, output_tensor=False))

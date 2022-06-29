@@ -4,11 +4,11 @@ import torch.nn as nn
 from encoder import simpleConvEncoder2d
 import modules
 
-class Main_Network(nn.Module):
-    def __init__(self, params) -> None:
+class DecompositionNetwork(nn.Module):
+    def __init__(self) -> None:
         super().__init__()
         self.encoder = simpleConvEncoder2d(nLayers=3, nChannelsInit=8, nInputChannels=3)
-        outChannels = self.encoder.outputChannels()
+        outChannels = self.encoder.outputChannels
 
         # construct fully connected layer
         nLayers_fc = 2
@@ -29,7 +29,7 @@ class Main_Network(nn.Module):
         # still to be defined
         # self.primitivesTable = modules.Primitives(params, outChannels)
 
-        self.outputLayer = nn.Conv2d(in_channels=outChannels, out_channels=4)
+        self.outputLayer = nn.Conv2d(in_channels=outChannels, out_channels=4, kernel_size=1)
 
     def foward(self, x):
 

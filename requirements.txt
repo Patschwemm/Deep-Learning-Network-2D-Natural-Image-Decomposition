@@ -1,2 +1,2 @@
-notebook ipykernel ipywidgets matplotlib numpy tqdm segmentation-models-pytorch pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -c conda-forge
+conda install notebook scikit-fmm ipykernel ipywidgets matplotlib numpy tqdm segmentation-models-pytorch pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -c conda-forge
 $ pytorch torchvision torchaudio cpuonly -c pytorch

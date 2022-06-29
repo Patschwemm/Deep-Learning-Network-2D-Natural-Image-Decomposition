@@ -15,7 +15,7 @@ class simpleConvEncoder2d(nn.Module):
                 out_channels=nOutputChannels,
                 kernel_size=3,
                 padding=1,
-                padding_mode="same"))
+                padding_mode="reflect"))
             encoder.append(nn.BatchNorm2d(num_features=nOutputChannels))
             encoder.append(nn.LeakyReLU(negative_slope=0.2, inplace=True))
             encoder.append(nn.MaxPool2d(kernel_size=2, dilation=2))
@@ -26,12 +26,11 @@ class simpleConvEncoder2d(nn.Module):
         # for the layers in the loop
         self.outputChannels = nOutputChannels //2
         
-        @property
-        def output_channels(self):
-            return self.outputChannels
+    def outputChannels(self):
+        return self.outputChannels
 
-        def forward(self, x):
-            x = self.encoder(x)
-            return x
+    def forward(self, x):
+        x = self.encoder(x)
+        return x
 
 
