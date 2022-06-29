@@ -6,18 +6,18 @@ from typing import Tuple
 import matplotlib.pyplot as plt
 
 
-def all_loss_fn(x: torch.tensor,  mask_y:torch.tensor, field_y: torch.tensor):
+def all_loss_fn(x: torch.tensor,  mask_y:torch.tensor, field_y: torch.tensor, device: torch.device):
 
+    # print("x shape for batching of bbox", x.shape)
     x_reshaped = torch.reshape(x, (x.shape[0], 2, 2))
-    # print(x_reshaped)
 
-    field_x = distance_field_batch(x_reshaped, field_y.shape)
+    field_x = distance_field_batch(x_reshaped, field_y.shape, device=device).to(device=device)
     # print(field_x.shape)
     # plt.imshow(null_fields[0],cmap="gray")
     # plt.savefig("pictures/null_fields.png")
 
     # mask_x = field_x.masked_fill_(field_x == 0, 1)
-    mask_x = field_x == 0
+    mask_x = (field_x == 0).to(device=device)
     # print(mask_x.shape)
 
 

@@ -2,11 +2,11 @@ from pyrsistent import inc
 import torch 
 import torch.nn as nn
 from encoder import simpleConvEncoder2d
-import modules
 
 class DecompositionNetwork(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self, batch_size) -> None:
         super().__init__()
+        self.batch_size = batch_size
         self.encoder = simpleConvEncoder2d(nLayers=3, nChannelsInit=8, nInputChannels=3)
         outChannels = self.encoder.outputChannels
 
@@ -29,13 +29,21 @@ class DecompositionNetwork(nn.Module):
         # still to be defined
         # self.primitivesTable = modules.Primitives(params, outChannels)
 
-        self.outputLayer = nn.Conv2d(in_channels=outChannels, out_channels=4, kernel_size=1)
+    
+        self.outputLayer = nn.Sequential(
+            nn.Linear(in_features= 32 * 32 * 32, out_features=256),
+            nn.Linear(in_features=256, out_features=16),
+            nn.Linear(in_features=16, out_features=4)
+            )
 
-    def foward(self, x):
+    def forward(self, x):
 
         encoding = self.encoder(x)
         features = self.fcLayers(encoding)
+        # print(features.shape)
+        features = features.view(self.batch_size, -1)
         primitive = self.outputLayer(features)
+        # print("primitive predict shape:",primitive.shape)
         return primitive
 
 

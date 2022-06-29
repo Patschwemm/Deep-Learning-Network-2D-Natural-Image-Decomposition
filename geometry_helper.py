@@ -61,35 +61,25 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
     return c_field_distance
     
 
-def distance_field_batch(x: torch.Tensor, y_shape: torch.Tensor):
+def distance_field_batch(x: torch.Tensor, y_shape: torch.Tensor, device: torch.device):
 
     w, h = y_shape[1], y_shape[0]
 
-    bbox_test = torch.tensor([
-    # [(P1_x, P1_y), (P2_x, P2_y), ...]
-    [(128 - 12, 128 - 12), (128 + 12, 128 + 12)],
-    [(128 - 12, 128 - 12), (128 + 12, 128 + 12)]
-    ]).float()
 
-
-    bbox_list = []
-    for rect in x:
-        bbox_list.append([
-            (rect[0, 0]-rect[1, 1], rect[0, 1]-rect[1, 0]),
-         (rect[0, 0]+rect[1, 1], rect[0, 1]+rect[1, 0])
-         ])
-        
-    bbox = torch.tensor(bbox_list).float()
-
+    # bbox_test = torch.tensor([
+    # # [(P1_x, P1_y), (P2_x, P2_y), ...]
+    # [(128 - 12, 128 - 12), (128 + 12, 128 + 12)],
+    # [(128 - 12, 128 - 12), (128 + 12, 128 + 12)]
+    # ]).float()
 
 
     # coordinate system
-    X = torch.arange(w)
-    Y = torch.arange(h)
+    X = torch.arange(w).to(device)
+    Y = torch.arange(h).to(device)
     # reshape to match bounding boxes
     X, Y = X[None, :, None], Y[None, :, None]
     # compute L1-distances in each dimension to both boundaries
-    Dx, Dy = bbox[:, None, :, 0] - X, bbox[:, None, :, 1] - Y
+    Dx, Dy = x[:, None, :, 0] - X, x[:, None, :, 1] - Y
     Dx[..., 1], Dy[..., 1] = Dx[..., 1] * -1, Dy[..., 1] * -1
     # compute 
     Dx, Dy = Dx.max(dim=-1).values, Dy.max(dim=-1).values
@@ -102,7 +92,6 @@ def distance_field_batch(x: torch.Tensor, y_shape: torch.Tensor):
     # plt.show()
     # plt.close()
 
-    print(D.shape)
     return D
 
 

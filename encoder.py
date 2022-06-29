@@ -18,7 +18,7 @@ class simpleConvEncoder2d(nn.Module):
                 padding_mode="reflect"))
             encoder.append(nn.BatchNorm2d(num_features=nOutputChannels))
             encoder.append(nn.LeakyReLU(negative_slope=0.2, inplace=True))
-            encoder.append(nn.MaxPool2d(kernel_size=2, dilation=2))
+            encoder.append(nn.MaxPool2d(kernel_size=2))
             nInputChannels = nOutputChannels
             nOutputChannels = nOutputChannels*2
         self.encoder = nn.Sequential(*encoder)
