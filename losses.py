@@ -32,7 +32,7 @@ def all_loss_fn(x: torch.tensor,  mask_y:torch.tensor, field_y: torch.tensor, de
     cov_loss = coverage_loss(field_x=field_x, mask_y=mask_y)
     consis_loss = consistency_loss(field_y=field_y, mask_x=mask_x)
 
-    return torch.sqrt(cov_loss) + torch.sqrt(consis_loss)
+    return cov_loss + consis_loss
 
 def coverage_loss(field_x: torch.Tensor, mask_y: torch.Tensor):
     """
