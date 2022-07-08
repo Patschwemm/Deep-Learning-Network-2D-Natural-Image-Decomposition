@@ -4,7 +4,7 @@ import torch.nn as nn
 #simple conv encoder class that extracts the features of a picture
 class simpleConvEncoder2d(nn.Module):
 
-    def __init__(self, nLayers, nChannelsInit=8, nInputChannels=3) -> None:
+    def __init__(self, nLayers, nChannelsInit=8, nInputChannels=1) -> None:
         super().__init__()
         nOutputChannels = nChannelsInit
         encoder = []

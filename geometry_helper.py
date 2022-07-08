@@ -63,7 +63,7 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
 
 def distance_field_batch(x: torch.Tensor, y_shape: torch.Tensor, device: torch.device):
 
-    w, h = y_shape[1], y_shape[0]
+    w, h = y_shape[2], y_shape[1]
 
 
     # bbox_test = torch.tensor([

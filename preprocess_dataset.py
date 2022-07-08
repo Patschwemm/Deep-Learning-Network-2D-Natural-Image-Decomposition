@@ -49,8 +49,13 @@ class Distance_field_for_targets:
             distance_field = distance_field.masked_fill(target, 0)
         else:
             distance_field = torch.zeros_like(target)
+        
+        if (type(target) != type(distance_field)):
+            print("type not the same")
+            print("target: ", type(target))
+            print("field: ", type(distance_field))
 
-        return torch.stack((target, distance_field))
+        return torch.stack((target, distance_field)).float()
 
 class OxfordIIITPet_Distancefields_train(OxfordIIITPet):
 

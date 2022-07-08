@@ -2,37 +2,68 @@ import torch
 import torch.nn as nn
 from geometry_helper import distance_field_rectangle
 from geometry_helper import distance_field_batch
-from typing import Tuple
+from typing import Tuple, Dict
 import matplotlib.pyplot as plt
 
 
-def all_loss_fn(x: torch.tensor,  mask_y:torch.tensor, field_y: torch.tensor, device: torch.device):
+def all_loss_fn(x: torch.tensor, 
+prim_dict: Dict,  
+mask_y:torch.tensor, 
+field_y: torch.tensor,  
+device: torch.device, 
+consis_weight: float=1, 
+mask_factor: int=1):
+    """
+    Consis weight is used to adjust to magnitude of coverage loss. 
+    Mask factor increases importance of the local environment around edges to be included in the loss.
+    """
 
-    # print("x shape for batching of bbox", x.shape)
-    x_reshaped = torch.reshape(x, (x.shape[0], 2, 2))
+    rect_count = prim_dict["Rectangles"]
+    tri_count = prim_dict["Triangles"]
+    square_count = prim_dict["Squares"]
 
-    field_x = distance_field_batch(x_reshaped, field_y.shape, device=device).to(device=device)
-    # print(field_x.shape)
-    # plt.imshow(null_fields[0],cmap="gray")
-    # plt.savefig("pictures/null_fields.png")
+    prim_count = rect_count + tri_count + square_count
 
-    # mask_x = field_x.masked_fill_(field_x == 0, 1)
-    mask_x = (field_x == 0).to(device=device)
-    # print(mask_x.shape)
+    x_reshaped = torch.reshape(x, (prim_count, x.shape[1], 2, 2))
 
-
-    # print(mask_x.max())
-    # plt.imshow(mask_x[0],cmap="gray")
-    # plt.savefig("pictures/mask_x.png")
-    # plt.close()
-
-    # print(mask_x.shape)
+    union_field = torch.ones_like(field_y) * float("inf")
+    for i in range(prim_dict["Rectangles"]):
+        field_x = distance_field_batch(x_reshaped[i], field_y.shape, device=device).to(device=device)
+        # plt.imshow(field_x[0].detach().cpu(),cmap="gray")
+        # plt.savefig(f"pictures/field_x{i}.png")
+        union_field = torch.minimum(field_x, union_field)
+    
+    # mask factor as penalty for very slim but long rectangles
+    mask_x = (union_field * (-mask_factor))
+    mask_x = torch.exp(mask_x)
 
 
-    cov_loss = coverage_loss(field_x=field_x, mask_y=mask_y)
+    # print("field_y shape:", field_y.shape)
+    # print("mask_y shape:", mask_y.shape)
+    # print("field_x shape:", field_x.shape)
+    # print("mask_x shape:", mask_x.shape)
+
+    cov_loss = coverage_loss(field_x=union_field, mask_y=mask_y)
     consis_loss = consistency_loss(field_y=field_y, mask_x=mask_x)
 
-    return cov_loss + consis_loss
+
+    # plt.scatter(x=x[0, 0].detach().cpu(), y=x[0, 1].detach().cpu(), c='r', s=3)
+    # plt.scatter(x=x[0, 2].detach().cpu(), y=x[0, 3].detach().cpu(), c='r', s=3)
+    # plt.imshow(field_x[0].detach().cpu(),cmap="gray")
+    # plt.savefig("pictures/field_x.png")
+    # plt.imshow(mask_x[0].detach().cpu(),cmap="gray")
+    # plt.savefig("pictures/mask_x.png")
+    # plt.imshow(field_y[0],cmap="gray")
+    # plt.savefig("pictures/field_y.png")
+    # plt.imshow(mask_y[0],cmap="gray")
+    # plt.savefig("pictures/mask_y.png")
+
+    negative_penalty = -1 * torch.minimum(x, torch.zeros_like(x)).sum()
+    # print(-negative_penalty * beta)
+    # print(cov_loss + consis_weight * consis_loss + (-negative_penalty * beta))
+
+
+    return  cov_loss + consis_weight * consis_loss + negative_penalty, [cov_loss, consis_weight * consis_loss, negative_penalty]
 
 def coverage_loss(field_x: torch.Tensor, mask_y: torch.Tensor):
     """
@@ -58,8 +89,8 @@ def consistency_loss(field_y: torch.Tensor, mask_x: torch.Tensor):
     for all points on the surface.
     """
     #calculate the distances 
-    coverage = field_y * mask_x
-    sum_coverage = coverage.mean()
+    consistency = field_y * mask_x
+    sum_consistency = consistency.mean()
 
-    return sum_coverage
+    return sum_consistency
 
