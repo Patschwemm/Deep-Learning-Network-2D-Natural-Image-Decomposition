@@ -25,7 +25,7 @@ class PrimitiveModule(nn.Module):
         super().__init__()
         self.rect_count = prim_dict["Rectangles"]
         self.tri_count = prim_dict["Triangles"]
-        self.square_count = prim_dict["Squares"]
+        self.square_count = prim_dict["Circles"]
         self.rectPreds = nn.ModuleList([(RectPredModule(outChannels)) for i in range(self.rect_count)])
         # for future work insert triangle and square module list here
 

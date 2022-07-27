@@ -16,11 +16,12 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
 
     grid_x, grid_y = torch.meshgrid(axis_x, axis_y, indexing="ij")
 
+    x_pixel_sized = x * y.shape[0]-1
     # calculate the border of the rectangle
-    xborderleft = x[0] - x[3]/2
-    xborderright = x[0] + x[3]/2
-    yborderup = x[1] - x[2]/2
-    yborderdown = x[1] + x[2]/2
+    xborderleft = x_pixel_sized[0] - x_pixel_sized[3]/2
+    xborderright = x_pixel_sized[0] + x_pixel_sized[3]/2
+    yborderup = x_pixel_sized[1] - x_pixel_sized[2]/2
+    yborderdown = x_pixel_sized[1] + x_pixel_sized[2]/2
 
     # compute distances for dimensions x and y
     c_x = torch.maximum( xborderleft - grid_x, grid_x - xborderright )
@@ -61,7 +62,7 @@ def distance_field_rectangle(x: Tuple[int, int, int, int], y: torch.Tensor):
     return c_field_distance
     
 
-def distance_field_batch(x: torch.Tensor, y_shape: torch.Tensor, device: torch.device):
+def distance_field_batch(x: torch.Tensor, y_shape: torch.Tensor, size: int, device: torch.device):
 
     w, h = y_shape[2], y_shape[1]
 
@@ -79,7 +80,7 @@ def distance_field_batch(x: torch.Tensor, y_shape: torch.Tensor, device: torch.d
     # reshape to match bounding boxes
     X, Y = X[None, :, None], Y[None, :, None]
     # compute L1-distances in each dimension to both boundaries
-    Dx, Dy = x[:, None, :, 0] - X, x[:, None, :, 1] - Y
+    Dx, Dy = x[:, None, :, 0] * size - X, x[:, None, :, 1] * size - Y
     Dx[..., 1], Dy[..., 1] = Dx[..., 1] * -1, Dy[..., 1] * -1
     # compute 
     Dx, Dy = Dx.max(dim=-1).values, Dy.max(dim=-1).values

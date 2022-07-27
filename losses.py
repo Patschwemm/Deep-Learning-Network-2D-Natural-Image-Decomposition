@@ -7,34 +7,35 @@ import matplotlib.pyplot as plt
 
 
 def all_loss_fn(x: torch.tensor, 
-prim_dict: Dict,  
-mask_y:torch.tensor, 
-field_y: torch.tensor,  
-device: torch.device, 
-consis_weight: float=1, 
-mask_factor: int=1):
+    prim_dict: Dict,  
+    mask_y:torch.tensor, 
+    field_y: torch.tensor,  
+    device: torch.device, 
+    consis_weight: float=1, 
+    x_mask_padding: int=1):
     """
     Consis weight is used to adjust to magnitude of coverage loss. 
-    Mask factor increases importance of the local environment around edges to be included in the loss.
+    Mask padding increases importance of the local environment around edges to be included in the loss. (higher values mean more padding)
     """
 
     rect_count = prim_dict["Rectangles"]
     tri_count = prim_dict["Triangles"]
-    square_count = prim_dict["Squares"]
+    circles_count = prim_dict["Circles"]
 
-    prim_count = rect_count + tri_count + square_count
+    prim_count = rect_count + tri_count + circles_count
 
     x_reshaped = torch.reshape(x, (prim_count, x.shape[1], 2, 2))
 
     union_field = torch.ones_like(field_y) * float("inf")
     for i in range(prim_dict["Rectangles"]):
-        field_x = distance_field_batch(x_reshaped[i], field_y.shape, device=device).to(device=device)
+        field_x = distance_field_batch(x_reshaped[i], field_y.shape, field_y.size, device=device,).to(device=device)
+        print(field_y.size)
         # plt.imshow(field_x[0].detach().cpu(),cmap="gray")
         # plt.savefig(f"pictures/field_x{i}.png")
         union_field = torch.minimum(field_x, union_field)
     
     # mask factor as penalty for very slim but long rectangles
-    mask_x = (union_field * (-mask_factor))
+    mask_x = (union_field * (-x_mask_padding))
     mask_x = torch.exp(mask_x)
 
 
@@ -63,7 +64,7 @@ mask_factor: int=1):
     # print(cov_loss + consis_weight * consis_loss + (-negative_penalty * beta))
 
 
-    return  cov_loss + consis_weight * consis_loss + negative_penalty, [cov_loss, consis_weight * consis_loss, negative_penalty]
+    return  torch.log(1e-4 + cov_loss) + consis_weight * consis_loss + negative_penalty, [torch.log(1 + cov_loss) * 10, consis_weight * consis_loss, negative_penalty]
 
 def coverage_loss(field_x: torch.Tensor, mask_y: torch.Tensor):
     """
