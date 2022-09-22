@@ -1,0 +1,7 @@
+.vscode
+dataset/
+__pycache__/
+models/
+pictures/
+cad.h5
+data/

@@ -1,0 +1,10 @@
+jupyter 
+scikit-fmm 
+matplotlib 
+numpy 
+tqdm 
+torch 
+torchvision
+kornia
+opencv-python
+h5py
