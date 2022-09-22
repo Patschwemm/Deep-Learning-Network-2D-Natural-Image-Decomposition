@@ -8,7 +8,7 @@ pip install -r requirements.txt
 ```
 
 
-Basic structure: \\
+Basic structure: 
 
 Backbone of the network (to be worked on): backbone_training.py
 
@@ -21,3 +21,4 @@ losses for quasi unsupervised task: losses.py
 primitive geometry and distance field computation: field_geometry.py
 
 Different notebooks for different datasets (to be worked on to split into python files and do one general training file)
+
